@@ -1,5 +1,8 @@
-# Mnist_HelloWorld_CNN
-```
+## Mnist_HelloWorld_CNN
+
+- 2021-03-16: 添加image filtering
+
+```python
 from tensorflow.python.client import device_lib
 print(device_lib.list_local_devices())
 ```
@@ -24,7 +27,7 @@ print(device_lib.list_local_devices())
     
 
 
-```
+```python
 import keras
 import tensorflow as tf
 from keras.datasets import mnist
@@ -41,7 +44,7 @@ import numpy as np
 ```
 
 
-```
+```python
 # the data, shuffled and split between train and test sets
 (x_train_o, y_train), (x_test_o, y_test) = mnist.load_data()
 plt.imshow(x_train_o[0])
@@ -71,7 +74,7 @@ print(x_test.shape[0], 'test samples')
 
 
 
-```
+```python
 # convert class vectors to binary class matrices
 # 做一次 one-hot encoding
 y_train = keras.utils.to_categorical(y_train)
@@ -84,7 +87,7 @@ print(y_train[0])
     
 
 
-```
+```python
 model = Sequential()
 model.add(Dense(20, activation=LeakyReLU(), input_shape=(784,)))
 model.add(Dense(20, activation=LeakyReLU()))
@@ -109,14 +112,14 @@ model.summary()
     
 
 
-```
+```python
 model.compile(loss='categorical_crossentropy',
               optimizer='adam',
               metrics=['accuracy'])
 ```
 
 
-```
+```python
 batch_size = 128
 epochs = 100
 history = model.fit(x_train, y_train,
@@ -329,7 +332,7 @@ history = model.fit(x_train, y_train,
     
 
 
-```
+```python
 result= model.evaluate(x_test, y_test_n)
 print("test Acc:", result[1])
 ```
@@ -339,7 +342,7 @@ print("test Acc:", result[1])
     
 
 
-```
+```python
 def show_train_history(train_history, train, validation):  
     plt.plot(train_history.history[train])  
     plt.plot(train_history.history[validation])  
@@ -356,7 +359,7 @@ show_train_history(history, 'accuracy', 'val_accuracy')
 
 
 
-```
+```python
 def plot_images_labels_predict(images, labels, prediction, idx, num=10):  
     fig = plt.gcf()  
     fig.set_size_inches(12, 14)  
@@ -392,7 +395,7 @@ for i in range(240,250):
     print("\tAt %d'th: %d is with wrong prediction as %d!" % (i, y_test[i], prediction[i]))  
 ```
 
-    	[Info] Making prediction to x_test
+        [Info] Making prediction to x_test
     
 
     /usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/engine/sequential.py:450: UserWarning: `model.predict_classes()` is deprecated and will be removed after 2021-01-01. Please use instead:* `np.argmax(model.predict(x), axis=-1)`,   if your model does multi-class classification   (e.g. if it uses a `softmax` last-layer activation).* `(model.predict(x) > 0.5).astype("int32")`,   if your model does binary classification   (e.g. if it uses a `sigmoid` last-layer activation).
@@ -400,7 +403,7 @@ for i in range(240,250):
     
 
     
-    	[Info] Show 10 prediction result (From 240):
+        [Info] Show 10 prediction result (From 240):
     [5 9 8 7 2 3 0 6 4 2]
     
     
@@ -409,15 +412,15 @@ for i in range(240,250):
 ![png](output_9_3.png)
 
 
-    	[Info] Error analysis:
-    	At 247'th: 4 is with wrong prediction as 6!
+        [Info] Error analysis:
+        At 247'th: 4 is with wrong prediction as 6!
     
 
 ## 使用ＣＮＮ
 
 
 
-```
+```python
 (X_train, Y_train), (X_test, Y_test) = mnist.load_data()
 X_train = X_train.reshape(60000, 1, 28, 28)/255
 X_test = X_test.reshape(10000, 1, 28, 28)/255
@@ -426,7 +429,7 @@ Y_test = keras.utils.to_categorical(Y_test)
 ```
 
 
-```
+```python
 model1 = Sequential()
 model1.add(Conv2D(filters=32, kernel_size=3, input_shape=(1, 28, 28), activation='relu', padding='same'))
 model1.add(MaxPool2D(pool_size=2, data_format='channels_first'))
@@ -457,7 +460,7 @@ model1.summary()
     
 
 
-```
+```python
 model1.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 h = model1.fit(X_train, Y_train, epochs=5, batch_size=64, verbose=1, validation_split=0.33)
 
@@ -489,7 +492,7 @@ show_train_history(h, 'accuracy', 'val_accuracy')
 
 
 
-```
+```python
 # Iterate thru all the layers of the model
 # https://towardsdatascience.com/convolutional-neural-network-feature-map-and-filter-visualization-f75012a5a49c
 for layer in model1.layers:
@@ -527,7 +530,7 @@ for layer in model1.layers:
 
 
 
-```
+```python
 model2 = Sequential()
 model2.add(Conv2D(filters=32, kernel_size=3, input_shape=(1, 28, 28), activation='relu', padding='same'))
 model2.add(MaxPool2D(pool_size=2, data_format='channels_first'))
@@ -591,7 +594,7 @@ show_train_history(h2, 'accuracy', 'val_accuracy')
 
 
 
-```
+```python
 # Iterate thru all the layers of the model
 # https://towardsdatascience.com/convolutional-neural-network-feature-map-and-filter-visualization-f75012a5a49c
 for layer in model2.layers:
@@ -636,8 +639,149 @@ for layer in model2.layers:
 ![png](output_16_3.png)
 
 
+### Image filtering
+當我們需要強化影像中的某些特徵並消除其他不想要的特徵，所採用的方法便是使用特定 kernel，針對整張進行捲積（convolution）操作。
 
+舉例來說，模糊（blur）、邊緣偵測（edge detection）、邊緣強化（edge enhancement）、噪點去除（noise removal）等，都是使用 kernel 針對影像進行捲積的結果。
+
+執行 convolution 後，會發現有一個很明顯的特性，就是輸出的圖片尺寸會比原來的小一圈，一般我們會採取四種方式來處理此特性：
+
+- Ignore the boundary pixels：忽略消失的邊界影像，直接使用輸出的圖片。
+- Zero padding：先在原圖周圍填補一圈為 0 的像素，再進行捲積，使輸出的圖片尺寸不變。
+- Replicate border：直接複製原圖最邊界的 pixels 到輸出的圖周圍，例如：aaaaaa 🡨 abcdefgh 🡪 hhhhhhh
+- Reflect border：與 Replicate border 類似，但複製的方式是對稱方式 copy，例如：fedcba 🡨 abcdefgh 🡪 hgfedcb
+
+from: https://makerpro.cc/2019/06/the-convolution-of-opencv/
+
+
+```python
+!pip install opencv-python
 ```
 
+    Collecting opencv-python
+      Downloading https://files.pythonhosted.org/packages/70/a8/e52a82936be6d5696fb06c78450707c26dc13df91bb6bf49583bb9abbaa0/opencv_python-4.5.1.48-cp37-cp37m-win_amd64.whl (34.9MB)
+    Requirement already satisfied: numpy>=1.14.5 in c:\users\aikawa\anaconda3\lib\site-packages (from opencv-python) (1.16.5)
+    Installing collected packages: opencv-python
+    Successfully installed opencv-python-4.5.1.48
+    
+
+
+```python
+!pip install imutils
 ```
 
+    Collecting imutils
+      Downloading https://files.pythonhosted.org/packages/3f/d3/ecb4d108f6c1041d24842a345ee0123cd7f366ba75cf122601e856d42ba2/imutils-0.5.4.tar.gz
+    Building wheels for collected packages: imutils
+      Building wheel for imutils (setup.py): started
+      Building wheel for imutils (setup.py): finished with status 'done'
+      Created wheel for imutils: filename=imutils-0.5.4-cp37-none-any.whl size=25862 sha256=773525227acf4fe383c8f086d88876da33db4d5ef16f379e840b33023d616253
+      Stored in directory: C:\Users\aikawa\AppData\Local\pip\Cache\wheels\db\23\45\fc7424906880ffa9577a2a428b961f2b79e0e21d9f71e7e6bc
+    Successfully built imutils
+    Installing collected packages: imutils
+    Successfully installed imutils-0.5.4
+    
+
+
+```python
+# blur
+import numpy as np
+import cv2
+import imutils
+import sys
+import matplotlib.pyplot as plt
+
+imageName = "cat.jpg"
+image = cv2.imread(imageName)
+image = image[:,:,::-1]  # bgr -->rbb
+
+
+# kernel size = 5x5
+kernel_size = 5
+
+# 使用numpy建立 5*5且值為1/(5**2)的矩陣作為kernel，所有值皆為0.04的5x5矩陣
+kernel = np.ones((kernel_size, kernel_size), dtype=np.float32) / kernel_size**2
+print (kernel)
+
+# 使用cv2.filter2D進行convolute，
+result = cv2.filter2D(image, -1, dst=-1, kernel=kernel, anchor=(-1, -1), delta=0, borderType=cv2.BORDER_DEFAULT)
+plt.figure(figsize=(18,10)) 
+ax = plt.subplot(1, 2, 1)  
+ax.imshow(image)  
+ax.set_title("Original", fontsize=10)  
+ax = plt.subplot(1, 2, 2)  
+ax.imshow(result) 
+ax.set_title("Filter", fontsize=10)  
+
+plt.show() 
+```
+
+    [[0.04 0.04 0.04 0.04 0.04]
+     [0.04 0.04 0.04 0.04 0.04]
+     [0.04 0.04 0.04 0.04 0.04]
+     [0.04 0.04 0.04 0.04 0.04]
+     [0.04 0.04 0.04 0.04 0.04]]
+    
+
+
+![png](output_20_1.png)
+
+
+### edge detection
+#### Sobel filters
+以下 kernel 的九個值全部加起來為 0（-1×8+8=0）？
+
+也就是說，當影像區域的色彩一致時（可能為背景），kernel 計算出的平均值為 0，代表輸出值（kernel anchor）等於 0（黑色）
+
+而倘若影像區域的中間顏色比周圍亮（代表可能為物體的交界處），此時 kernel 中間的數值 8 便會強化加大該交界值而變得更亮，-1 則淡化了周圍非物件邊緣的像素強度，使得整體算出的輸出值（kernel anchor）更大。
+
+這就是大名鼎鼎的 **Sobel filter**，最早是由美國計算機科學家艾爾文·索伯（Irwin Sobel）及蓋瑞·費德曼（Gary Feldman）於 1968 年在史丹佛大學的人工智慧實驗室（SAIL）所提出，專門用於邊緣檢測（Edge Detector），而為了表揚他們的貢獻，才用他們的名字命名。
+
+旋轉後可形成四種 Sobel filters：left、right、top、bottom，分別用於檢測水平與垂直的變化。
+
+- 垂直
+```
+np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
+np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
+```
+
+- 水平
+```
+np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
+np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
+```
+#### Laplacian Edge Detector
+另外還有一種相當知名的邊緣檢測稱為 Laplacian Edge Detector，不同於 Sobel 需要至少兩種 kernels 來分別檢測水平與垂直邊緣，它僅用一種 kernel 就可以偵測兩種方向的邊緣
+```
+np.array([[0, 1, 0], [1, -4, 1], [0, 1, 0]])
+np.array([[1, 1, 1], [1, -8, 1], [1, 1, 1]])
+```
+
+*不過 Laplacian 有個缺點，是對於噪點較為敏感，因此若能在進行 Laplacian 前先作模糊化處理，效果會更好
+
+
+```python
+# edge detection
+kernel = np.array([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]])
+
+# 使用cv2.filter2D進行convolute，
+result = cv2.filter2D(image, -1, dst=-1, kernel=kernel, anchor=(-1, -1), delta=0, borderType=cv2.BORDER_DEFAULT)
+plt.figure(figsize=(18,10)) 
+ax = plt.subplot(1, 2, 1)  
+ax.imshow(image)  
+ax.set_title("Original", fontsize=10)  
+ax = plt.subplot(1, 2, 2)  
+ax.imshow(result) 
+ax.set_title("Filter", fontsize=10)  
+
+plt.show() 
+```
+
+
+![png](output_22_0.png)
+
+
+
+```python
+
+```
